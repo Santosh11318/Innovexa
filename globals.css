@@ -1,0 +1,295 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@layer base {
+  :root {
+    /* ── Light Mode ── */
+    --background: 0 0% 100%;
+    --foreground: 224 71.4% 4.1%;
+    --card: 0 0% 100%;
+    --card-foreground: 224 71.4% 4.1%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 71.4% 4.1%;
+    --primary: 238 84% 58%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 14.3% 95.9%;
+    --secondary-foreground: 220.9 39.3% 11%;
+    --muted: 220 14.3% 95.9%;
+    --muted-foreground: 220 8.9% 46.1%;
+    --accent: 220 14.3% 95.9%;
+    --accent-foreground: 220.9 39.3% 11%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 238 84% 58%;
+    --radius: 0.75rem;
+    --surface-1: 0 0% 98%;
+    --surface-2: 220 14.3% 95.9%;
+    --surface-3: 220 13% 91%;
+
+    /* Brand */
+    --brand-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #06b6d4 100%);
+    --glow-color: rgba(99, 102, 241, 0.3);
+  }
+
+  .dark {
+    /* ── Dark Mode ── */
+    --background: 224 71.4% 4.1%;
+    --foreground: 210 20% 98%;
+    --card: 224 71.4% 6%;
+    --card-foreground: 210 20% 98%;
+    --popover: 224 71.4% 6%;
+    --popover-foreground: 210 20% 98%;
+    --primary: 238 84% 65%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 215 27.9% 16.9%;
+    --secondary-foreground: 210 20% 98%;
+    --muted: 215 27.9% 16.9%;
+    --muted-foreground: 217.9 10.6% 64.9%;
+    --accent: 215 27.9% 16.9%;
+    --accent-foreground: 210 20% 98%;
+    --destructive: 0 72.2% 50.6%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 215 27.9% 16.9%;
+    --input: 215 27.9% 16.9%;
+    --ring: 238 84% 65%;
+    --surface-1: 224 71.4% 6%;
+    --surface-2: 215 27.9% 10%;
+    --surface-3: 215 27.9% 14%;
+
+    --brand-gradient: linear-gradient(135deg, #818cf8 0%, #a78bfa 50%, #22d3ee 100%);
+    --glow-color: rgba(129, 140, 248, 0.3);
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    @apply scroll-smooth;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  /* Typography */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { @apply bg-transparent; }
+  ::-webkit-scrollbar-thumb { @apply bg-border rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-muted-foreground/50; }
+
+  /* Selection */
+  ::selection { @apply bg-primary/20 text-primary; }
+
+  /* Focus */
+  :focus-visible { @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background; }
+}
+
+@layer components {
+  /* ── Glass morphism ── */
+  .glass {
+    @apply backdrop-blur-md border border-white/10;
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .dark .glass {
+    background: rgba(0, 0, 0, 0.2);
+    @apply border-white/5;
+  }
+
+  .glass-card {
+    @apply glass rounded-2xl;
+  }
+
+  /* ── Brand Gradient ── */
+  .brand-gradient {
+    background: var(--brand-gradient);
+  }
+
+  .brand-gradient-text {
+    background: var(--brand-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* ── Glow ── */
+  .glow {
+    box-shadow: 0 0 20px var(--glow-color);
+  }
+
+  .glow-hover:hover {
+    box-shadow: 0 0 30px var(--glow-color);
+    transition: box-shadow 0.3s ease;
+  }
+
+  /* ── Premium Card ── */
+  .card-premium {
+    @apply bg-card border border-border rounded-2xl shadow-card transition-all duration-300;
+  }
+
+  .card-premium:hover {
+    @apply shadow-card-hover -translate-y-0.5;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar-item {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted-foreground font-medium text-sm
+    transition-all duration-150 hover:text-foreground hover:bg-secondary cursor-pointer;
+  }
+
+  .sidebar-item.active {
+    @apply bg-primary/10 text-primary;
+  }
+
+  /* ── Feed Post ── */
+  .feed-card {
+    @apply card-premium p-5 space-y-4;
+  }
+
+  /* ── Badge ── */
+  .badge-level {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold;
+  }
+
+  /* ── Stat Card ── */
+  .stat-card {
+    @apply card-premium p-5 flex flex-col gap-1.5;
+  }
+
+  /* ── Section Header ── */
+  .section-header {
+    @apply flex items-center justify-between mb-6;
+  }
+
+  .section-title {
+    @apply text-xl font-semibold tracking-tight;
+  }
+
+  /* ── Input Premium ── */
+  .input-premium {
+    @apply w-full px-4 py-3 rounded-xl bg-surface-1 border border-border text-foreground 
+    placeholder:text-muted-foreground/60 outline-none transition-all duration-150
+    focus:border-primary focus:ring-2 focus:ring-primary/20;
+  }
+
+  /* ── Button Primary ── */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl
+    bg-primary text-primary-foreground font-semibold text-sm
+    transition-all duration-150 hover:opacity-90 active:scale-95 disabled:opacity-50;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl
+    bg-secondary text-secondary-foreground font-semibold text-sm
+    border border-border transition-all duration-150 hover:bg-muted active:scale-95;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl
+    text-muted-foreground font-medium text-sm
+    transition-all duration-150 hover:bg-secondary hover:text-foreground active:scale-95;
+  }
+
+  /* ── Avatar ── */
+  .avatar {
+    @apply relative inline-flex items-center justify-center rounded-full 
+    bg-gradient-to-br from-primary to-purple-500 text-white font-semibold overflow-hidden;
+  }
+
+  /* ── Skeleton ── */
+  .skeleton {
+    @apply animate-pulse bg-muted rounded-lg;
+  }
+
+  /* ── Tag ── */
+  .tag {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+    bg-primary/10 text-primary border border-primary/20;
+  }
+
+  /* ── Status Dot ── */
+  .status-dot-online {
+    @apply w-2.5 h-2.5 rounded-full bg-green-500 ring-2 ring-background;
+  }
+
+  /* ── Score Ring ── */
+  .score-ring {
+    @apply relative flex items-center justify-center rounded-full border-4;
+  }
+
+  /* ── Divider with text ── */
+  .divider-with-text {
+    @apply relative flex items-center text-xs text-muted-foreground;
+  }
+
+  .divider-with-text::before,
+  .divider-with-text::after {
+    @apply flex-1 border-t border-border content-[''];
+  }
+
+  .divider-with-text span {
+    @apply mx-3;
+  }
+
+  /* ── Empty State ── */
+  .empty-state {
+    @apply flex flex-col items-center justify-center py-16 text-center;
+  }
+
+  /* ── Page Header ── */
+  .page-header {
+    @apply flex items-center justify-between py-6 border-b border-border mb-6;
+  }
+
+  /* ── Notification badge ── */
+  .notif-badge {
+    @apply absolute -top-1 -right-1 flex items-center justify-center w-4 h-4 
+    rounded-full bg-red-500 text-white text-[9px] font-bold;
+  }
+}
+
+@layer utilities {
+  /* ── Text Gradient ── */
+  .text-gradient {
+    @apply brand-gradient-text;
+  }
+
+  /* ── Truncate multiline ── */
+  .line-clamp-2 { -webkit-line-clamp: 2; }
+  .line-clamp-3 { -webkit-line-clamp: 3; }
+
+  /* ── No scrollbar ── */
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* ── Pattern BG ── */
+  .bg-grid-pattern {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='32' height='32' fill='none' stroke='rgb(15 23 42 / 0.04)'%3e%3cpath d='M0 .5H31.5V32'/%3e%3c/svg%3e");
+  }
+
+  .dark .bg-grid-pattern {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='32' height='32' fill='none' stroke='rgb(248 250 252 / 0.04)'%3e%3cpath d='M0 .5H31.5V32'/%3e%3c/svg%3e");
+  }
+}
+
+/* ── Animations ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

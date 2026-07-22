@@ -1,0 +1,879 @@
+// Innovexa - Complete Database Schema
+// Version: 1.0.0
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────
+
+enum UserRole {
+  FOUNDER
+  INVESTOR
+  STUDENT
+  MENTOR
+  DEVELOPER
+  DESIGNER
+  MARKETING_EXPERT
+  FINANCE_EXPERT
+  AI_ENGINEER
+  PRODUCT_MANAGER
+  RESEARCHER
+  RECRUITER
+  SALES_PROFESSIONAL
+  LEGAL_ADVISOR
+  BUSINESS_CONSULTANT
+  FREELANCER
+  CREATOR
+  MANUFACTURER
+  SUPPLIER
+  INNOVATION_ENTHUSIAST
+}
+
+enum ProblemStatus {
+  OPEN
+  IN_PROGRESS
+  SOLVED
+  CLOSED
+}
+
+enum SolutionReward {
+  CASH
+  EMPLOYMENT
+  INVESTMENT
+  PARTNERSHIP
+  INTERNSHIP
+  ACQUISITION
+  LICENSING
+  REVENUE_SHARING
+}
+
+enum FundingStage {
+  IDEA
+  PRE_SEED
+  SEED
+  SERIES_A
+  SERIES_B
+  SERIES_C
+  GROWTH
+  IPO
+}
+
+enum SubscriptionTier {
+  FREE
+  STUDENT
+  PROFESSIONAL
+  STARTUP
+  BUSINESS
+  ENTERPRISE
+}
+
+enum EventType {
+  MEETUP
+  DEMO_DAY
+  HACKATHON
+  PITCH_COMPETITION
+  NETWORKING
+  CONFERENCE
+  WEBINAR
+  WORKSHOP
+}
+
+enum ApplicationStatus {
+  PENDING
+  REVIEWED
+  ACCEPTED
+  REJECTED
+}
+
+enum MeetingStatus {
+  REQUESTED
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+enum NotificationType {
+  CONNECTION_REQUEST
+  MESSAGE
+  SOLUTION_REPLY
+  STARTUP_INTEREST
+  INVESTOR_INTEREST
+  MEETING_REQUEST
+  JOB_MATCH
+  EVENT_REMINDER
+  ACHIEVEMENT
+  SYSTEM
+}
+
+// ─────────────────────────────────────────────
+// USER & AUTH
+// ─────────────────────────────────────────────
+
+model User {
+  id                String    @id @default(cuid())
+  email             String    @unique
+  emailVerified     DateTime?
+  name              String?
+  username          String?   @unique
+  password          String?
+  image             String?
+  coverImage        String?
+  bio               String?   @db.Text
+  headline          String?
+  location          String?
+  website           String?
+  github            String?
+  linkedin          String?
+  twitter           String?
+  videoIntro        String?
+  pitchDeckUrl      String?
+  resumeUrl         String?
+  availableForHire  Boolean   @default(false)
+  availableForCoFounder Boolean @default(false)
+  lookingFor        String[]
+  languages         String[]
+  industry          String[]
+  isVerified        Boolean   @default(false)
+  trustScore        Int       @default(0)
+  innovationScore   Int       @default(0)
+  contributionScore Int       @default(0)
+  builderLevel      Int       @default(1)
+  roles             UserRole[]
+  subscriptionTier  SubscriptionTier @default(FREE)
+  onboardingDone    Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  // Relations
+  accounts          Account[]
+  sessions          Session[]
+  experiences       Experience[]
+  skills            UserSkill[]
+  projects          Project[]
+  certificates      Certificate[]
+  achievements      Achievement[]
+  startups          StartupMember[]
+  ownedStartups     Startup[]        @relation("StartupOwner")
+  problems          Problem[]
+  solutions         Solution[]
+  solutionVotes     SolutionVote[]
+  investorProfile   InvestorProfile?
+  mentorProfile     MentorProfile?
+  connections       Connection[]     @relation("UserConnections")
+  connectionsOf     Connection[]     @relation("ConnectionOf")
+  sentMessages      Message[]        @relation("SentMessages")
+  workspaces        WorkspaceMember[]
+  jobApplications   JobApplication[]
+  postedJobs        Job[]
+  events            EventAttendee[]
+  createdEvents     Event[]
+  mentorSessions    MentorSession[]  @relation("MenteeSessions")
+  notifications     Notification[]
+  bookmarks         Bookmark[]
+  feedPosts         FeedPost[]
+  feedPostLikes     FeedPostLike[]
+  feedPostComments  FeedPostComment[]
+  followers         Follow[]         @relation("Followers")
+  following         Follow[]         @relation("Following")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─────────────────────────────────────────────
+// USER PROFILE SECTIONS
+// ─────────────────────────────────────────────
+
+model Experience {
+  id          String    @id @default(cuid())
+  userId      String
+  title       String
+  company     String
+  location    String?
+  startDate   DateTime
+  endDate     DateTime?
+  current     Boolean   @default(false)
+  description String?   @db.Text
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+}
+
+model UserSkill {
+  id         String @id @default(cuid())
+  userId     String
+  skill      String
+  level      Int    @default(1) // 1-5
+  endorsed   Int    @default(0)
+  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  description String?  @db.Text
+  imageUrl    String?
+  demoUrl     String?
+  githubUrl   String?
+  tags        String[]
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+}
+
+model Certificate {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  issuer      String
+  issueDate   DateTime
+  expiryDate  DateTime?
+  credentialUrl String?
+  imageUrl    String?
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Achievement {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  description String?
+  icon        String?
+  earnedAt    DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─────────────────────────────────────────────
+// STARTUP
+// ─────────────────────────────────────────────
+
+model Startup {
+  id                String   @id @default(cuid())
+  ownerId           String
+  name              String
+  slug              String   @unique
+  logo              String?
+  coverImage        String?
+  tagline           String?
+  description       String?  @db.Text
+  mission           String?  @db.Text
+  vision            String?  @db.Text
+  problem           String?  @db.Text
+  solution          String?  @db.Text
+  businessModel     String?  @db.Text
+  revenueModel      String?  @db.Text
+  marketSize        String?
+  traction          String?  @db.Text
+  roadmap           String?  @db.Text
+  industry          String[]
+  tags              String[]
+  website           String?
+  demoUrl           String?
+  pitchDeckUrl      String?
+  videoPitchUrl     String?
+  stage             FundingStage @default(IDEA)
+  fundingTarget     Float?
+  fundingRaised     Float?
+  valuation         Float?
+  isPublic          Boolean  @default(true)
+  isVerified        Boolean  @default(false)
+  isFeatured        Boolean  @default(false)
+  monthlyRevenue    Float?
+  monthlyGrowth     Float?
+  totalUsers        Int?
+  country           String?
+  city              String?
+  foundedAt         DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  owner             User           @relation("StartupOwner", fields: [ownerId], references: [id])
+  members           StartupMember[]
+  milestones        Milestone[]
+  updates           StartupUpdate[]
+  jobs              Job[]
+  investorInterests InvestorInterest[]
+  bookmarks         Bookmark[]
+}
+
+model StartupMember {
+  id        String   @id @default(cuid())
+  startupId String
+  userId    String
+  role      String
+  equity    Float?
+  joinedAt  DateTime @default(now())
+  startup   Startup  @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([startupId, userId])
+}
+
+model Milestone {
+  id          String   @id @default(cuid())
+  startupId   String
+  title       String
+  description String?  @db.Text
+  targetDate  DateTime?
+  completedAt DateTime?
+  status      String   @default("PENDING")
+  startup     Startup  @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+}
+
+model StartupUpdate {
+  id        String   @id @default(cuid())
+  startupId String
+  title     String
+  content   String   @db.Text
+  imageUrl  String?
+  startup   Startup  @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+// ─────────────────────────────────────────────
+// PROBLEM MARKETPLACE
+// ─────────────────────────────────────────────
+
+model Problem {
+  id            String        @id @default(cuid())
+  authorId      String
+  title         String
+  description   String        @db.Text
+  category      String
+  industry      String[]
+  tags          String[]
+  rewards       SolutionReward[]
+  cashReward    Float?
+  deadline      DateTime?
+  status        ProblemStatus @default(OPEN)
+  isVerified    Boolean       @default(false)
+  isFeatured    Boolean       @default(false)
+  viewCount     Int           @default(0)
+  imageUrl      String?
+  attachmentUrl String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  author        User          @relation(fields: [authorId], references: [id])
+  solutions     Solution[]
+  bookmarks     Bookmark[]
+}
+
+model Solution {
+  id          String   @id @default(cuid())
+  problemId   String
+  authorId    String
+  title       String
+  description String   @db.Text
+  approach    String?  @db.Text
+  attachmentUrl String?
+  demoUrl     String?
+  aiScore     Float?   @default(0)
+  isAccepted  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  problem     Problem       @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  author      User          @relation(fields: [authorId], references: [id])
+  votes       SolutionVote[]
+}
+
+model SolutionVote {
+  id         String   @id @default(cuid())
+  solutionId String
+  userId     String
+  value      Int      // +1 or -1
+  createdAt  DateTime @default(now())
+
+  solution   Solution @relation(fields: [solutionId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@unique([solutionId, userId])
+}
+
+// ─────────────────────────────────────────────
+// INVESTOR HUB
+// ─────────────────────────────────────────────
+
+model InvestorProfile {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  firmName         String?
+  investorType     String   // Angel, VC, PE, Corporate
+  industries       String[]
+  stages           FundingStage[]
+  minTicket        Float?
+  maxTicket        Float?
+  portfolioCount   Int?
+  totalDeployed    Float?
+  thesis           String?  @db.Text
+  isVerified       Boolean  @default(false)
+  bio              String?  @db.Text
+  linkedinUrl      String?
+  websiteUrl       String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  interests        InvestorInterest[]
+  meetings         MeetingRequest[]
+}
+
+model InvestorInterest {
+  id         String   @id @default(cuid())
+  investorId String
+  startupId  String
+  stage      String?
+  notes      String?  @db.Text
+  createdAt  DateTime @default(now())
+
+  investor   InvestorProfile @relation(fields: [investorId], references: [id], onDelete: Cascade)
+  startup    Startup         @relation(fields: [startupId], references: [id], onDelete: Cascade)
+}
+
+model MeetingRequest {
+  id          String        @id @default(cuid())
+  investorId  String
+  requesterId String
+  startupId   String?
+  message     String?       @db.Text
+  proposedAt  DateTime?
+  status      MeetingStatus @default(REQUESTED)
+  createdAt   DateTime      @default(now())
+
+  investor    InvestorProfile @relation(fields: [investorId], references: [id], onDelete: Cascade)
+}
+
+// ─────────────────────────────────────────────
+// MENTOR HUB
+// ─────────────────────────────────────────────
+
+model MentorProfile {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  expertise      String[]
+  industries     String[]
+  hourlyRate     Float?
+  isFreeAvailable Boolean @default(false)
+  totalSessions  Int      @default(0)
+  avgRating      Float    @default(0)
+  bio            String?  @db.Text
+  calendarUrl    String?
+  isVerified     Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessions       MentorSession[]
+  reviews        MentorReview[]
+}
+
+model MentorSession {
+  id          String   @id @default(cuid())
+  mentorId    String
+  menteeId    String
+  scheduledAt DateTime
+  duration    Int      // minutes
+  status      MeetingStatus @default(REQUESTED)
+  topic       String?
+  notes       String?  @db.Text
+  recordingUrl String?
+  meetingUrl  String?
+  isPaid      Boolean  @default(false)
+  price       Float?
+  createdAt   DateTime @default(now())
+
+  mentor      MentorProfile @relation(fields: [mentorId], references: [id], onDelete: Cascade)
+  mentee      User          @relation("MenteeSessions", fields: [menteeId], references: [id])
+  review      MentorReview?
+}
+
+model MentorReview {
+  id        String   @id @default(cuid())
+  sessionId String   @unique
+  mentorId  String
+  rating    Int      // 1-5
+  review    String?  @db.Text
+  createdAt DateTime @default(now())
+
+  session   MentorSession @relation(fields: [sessionId], references: [id])
+  mentor    MentorProfile @relation(fields: [mentorId], references: [id])
+}
+
+// ─────────────────────────────────────────────
+// TALENT MARKETPLACE
+// ─────────────────────────────────────────────
+
+model Job {
+  id           String   @id @default(cuid())
+  posterId     String
+  startupId    String?
+  title        String
+  description  String   @db.Text
+  requirements String[] 
+  skills       String[]
+  type         String   // Full-time, Part-time, Contract, Internship
+  location     String?
+  isRemote     Boolean  @default(false)
+  salaryMin    Float?
+  salaryMax    Float?
+  equity       Float?
+  currency     String   @default("INR")
+  isActive     Boolean  @default(true)
+  deadline     DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  poster       User     @relation(fields: [posterId], references: [id])
+  startup      Startup? @relation(fields: [startupId], references: [id])
+  applications JobApplication[]
+  bookmarks    Bookmark[]
+}
+
+model JobApplication {
+  id          String            @id @default(cuid())
+  jobId       String
+  applicantId String
+  coverLetter String?           @db.Text
+  resumeUrl   String?
+  status      ApplicationStatus @default(PENDING)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  job         Job  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  applicant   User @relation(fields: [applicantId], references: [id])
+
+  @@unique([jobId, applicantId])
+}
+
+// ─────────────────────────────────────────────
+// COLLABORATION WORKSPACE
+// ─────────────────────────────────────────────
+
+model Workspace {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  startupId   String?
+  isPrivate   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  members     WorkspaceMember[]
+  tasks       Task[]
+  messages    Message[]
+  files       WorkspaceFile[]
+  notes       WorkspaceNote[]
+}
+
+model WorkspaceMember {
+  id          String    @id @default(cuid())
+  workspaceId String
+  userId      String
+  role        String    @default("MEMBER") // OWNER, ADMIN, MEMBER, VIEWER
+  joinedAt    DateTime  @default(now())
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id])
+
+  @@unique([workspaceId, userId])
+}
+
+model Task {
+  id           String    @id @default(cuid())
+  workspaceId  String
+  title        String
+  description  String?   @db.Text
+  status       String    @default("TODO") // TODO, IN_PROGRESS, IN_REVIEW, DONE
+  priority     String    @default("MEDIUM")
+  assigneeId   String?
+  dueDate      DateTime?
+  labels       String[]
+  order        Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  workspace    Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  subtasks     Subtask[]
+  comments     TaskComment[]
+}
+
+model Subtask {
+  id        String   @id @default(cuid())
+  taskId    String
+  title     String
+  done      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  task      Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+}
+
+model TaskComment {
+  id        String   @id @default(cuid())
+  taskId    String
+  authorId  String
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+
+  task      Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+}
+
+model Message {
+  id          String   @id @default(cuid())
+  workspaceId String?
+  senderId    String
+  receiverId  String?
+  content     String   @db.Text
+  isEncrypted Boolean  @default(false)
+  attachments String[]
+  readAt      DateTime?
+  createdAt   DateTime @default(now())
+
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id])
+  sender      User       @relation("SentMessages", fields: [senderId], references: [id])
+}
+
+model WorkspaceFile {
+  id          String   @id @default(cuid())
+  workspaceId String
+  name        String
+  url         String
+  size        Int?
+  mimeType    String?
+  uploadedBy  String
+  createdAt   DateTime @default(now())
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+}
+
+model WorkspaceNote {
+  id          String   @id @default(cuid())
+  workspaceId String
+  title       String
+  content     String   @db.Text
+  authorId    String
+  isPublic    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+}
+
+// ─────────────────────────────────────────────
+// FEED
+// ─────────────────────────────────────────────
+
+model FeedPost {
+  id          String   @id @default(cuid())
+  authorId    String
+  content     String   @db.Text
+  imageUrl    String?
+  attachmentUrl String?
+  category    String?
+  tags        String[]
+  isPublic    Boolean  @default(true)
+  viewCount   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  author      User             @relation(fields: [authorId], references: [id])
+  likes       FeedPostLike[]
+  comments    FeedPostComment[]
+  bookmarks   Bookmark[]
+}
+
+model FeedPostLike {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  post      FeedPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([postId, userId])
+}
+
+model FeedPostComment {
+  id        String   @id @default(cuid())
+  postId    String
+  authorId  String
+  content   String   @db.Text
+  parentId  String?
+  createdAt DateTime @default(now())
+
+  post      FeedPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author    User     @relation(fields: [authorId], references: [id])
+}
+
+// ─────────────────────────────────────────────
+// EVENTS
+// ─────────────────────────────────────────────
+
+model Event {
+  id          String    @id @default(cuid())
+  creatorId   String
+  title       String
+  description String    @db.Text
+  type        EventType
+  coverImage  String?
+  startDate   DateTime
+  endDate     DateTime?
+  timezone    String    @default("Asia/Kolkata")
+  isOnline    Boolean   @default(false)
+  meetingUrl  String?
+  venue       String?
+  city        String?
+  country     String?
+  maxAttendees Int?
+  tags        String[]
+  isPublic    Boolean   @default(true)
+  isFeatured  Boolean   @default(false)
+  registrationUrl String?
+  createdAt   DateTime  @default(now())
+
+  creator     User          @relation(fields: [creatorId], references: [id])
+  attendees   EventAttendee[]
+  bookmarks   Bookmark[]
+}
+
+model EventAttendee {
+  id       String   @id @default(cuid())
+  eventId  String
+  userId   String
+  status   String   @default("REGISTERED")
+  joinedAt DateTime @default(now())
+
+  event    Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user     User  @relation(fields: [userId], references: [id])
+
+  @@unique([eventId, userId])
+}
+
+// ─────────────────────────────────────────────
+// SOCIAL
+// ─────────────────────────────────────────────
+
+model Connection {
+  id          String   @id @default(cuid())
+  userId      String
+  connectedId String
+  status      String   @default("PENDING") // PENDING, ACCEPTED, REJECTED
+  createdAt   DateTime @default(now())
+
+  user        User @relation("UserConnections", fields: [userId], references: [id])
+  connected   User @relation("ConnectionOf", fields: [connectedId], references: [id])
+
+  @@unique([userId, connectedId])
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower    User @relation("Following", fields: [followerId], references: [id])
+  following   User @relation("Followers", fields: [followingId], references: [id])
+
+  @@unique([followerId, followingId])
+}
+
+model Bookmark {
+  id         String   @id @default(cuid())
+  userId     String
+  startupId  String?
+  problemId  String?
+  jobId      String?
+  eventId    String?
+  postId     String?
+  createdAt  DateTime @default(now())
+
+  user       User     @relation(fields: [userId], references: [id])
+  startup    Startup? @relation(fields: [startupId], references: [id])
+  problem    Problem? @relation(fields: [problemId], references: [id])
+  job        Job?     @relation(fields: [jobId], references: [id])
+  event      Event?   @relation(fields: [eventId], references: [id])
+  post       FeedPost? @relation(fields: [postId], references: [id])
+}
+
+// ─────────────────────────────────────────────
+// NOTIFICATIONS
+// ─────────────────────────────────────────────
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  link      String?
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─────────────────────────────────────────────
+// KNOWLEDGE HUB
+// ─────────────────────────────────────────────
+
+model Course {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @db.Text
+  coverImage  String?
+  category    String
+  tags        String[]
+  isFree      Boolean  @default(true)
+  price       Float?
+  authorId    String
+  lessonCount Int      @default(0)
+  rating      Float    @default(0)
+  createdAt   DateTime @default(now())
+}
+
+model Template {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  category    String
+  fileUrl     String
+  previewUrl  String?
+  tags        String[]
+  downloadCount Int   @default(0)
+  isFree      Boolean  @default(true)
+  price       Float?
+  createdAt   DateTime @default(now())
+}
